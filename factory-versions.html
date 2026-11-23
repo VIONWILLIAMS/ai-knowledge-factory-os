@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Factory Version Lab | AI Knowledge Factory OS</title>
+  <link rel="stylesheet" href="factory-versions.css">
+</head>
+<body>
+  <main class="version-lab">
+    <aside class="version-rail" aria-label="项目目录">
+      <header class="rail-header">
+        <span class="eyebrow">AI KNOWLEDGE FACTORY OS</span>
+        <h1>Project<br>Directory</h1>
+        <p>左侧管理工厂视觉版本，右侧只打开当前选中的一个工厂。</p>
+      </header>
+
+      <div class="project-root" aria-label="当前项目">
+        <span class="project-root-icon">⌂</span>
+        <span><b>AI Knowledge Factory</b><em>主工厂视觉系统</em></span>
+      </div>
+
+      <div class="version-line" aria-label="工厂版本目录">
+        <button class="version-item" type="button" data-version="original" aria-pressed="false">
+          <span class="version-node"></span>
+          <span class="version-number">ORIGINAL</span>
+          <strong>原始结构</strong>
+          <em>锁定基线 · 无增量</em>
+          <span class="version-state locked">BASE</span>
+        </button>
+
+        <button class="version-item active" type="button" data-version="1.1" aria-pressed="true">
+          <span class="version-node"></span>
+          <span class="version-number">VERSION 1.1</span>
+          <strong>协议生产闭环</strong>
+          <em>接收、决策、生产、交付</em>
+          <span class="version-state current">LIVE</span>
+        </button>
+
+        <button class="version-item" type="button" data-version="1.2" aria-pressed="false">
+          <span class="version-node"></span>
+          <span class="version-number">VERSION 1.2</span>
+          <strong>主场景提炼</strong>
+          <em>独立场景 · 视角与动效</em>
+          <span class="version-state current">LIVE</span>
+        </button>
+
+        <button class="version-item" type="button" data-version="1.3" aria-pressed="false">
+          <span class="version-node"></span>
+          <span class="version-number">VERSION 1.3</span>
+          <strong>地标与灯光</strong>
+          <em>继承 1.1 · 等待增量</em>
+          <span class="version-state ready">SLOT</span>
+        </button>
+
+        <button class="version-item" type="button" data-version="1.4" aria-pressed="false">
+          <span class="version-node"></span>
+          <span class="version-number">VERSION 1.4</span>
+          <strong>最终主视觉</strong>
+          <em>继承 1.1 · 等待增量</em>
+          <span class="version-state ready">SLOT</span>
+        </button>
+      </div>
+
+      <section class="version-brief" aria-live="polite">
+        <span>CURRENT FILE</span>
+        <strong id="selected-version-title">v1.1 · 协议生产闭环</strong>
+        <p id="selected-version-copy">Factory 2 新增接收码头、决策上行、生产主线、QA 回工和知识回流。</p>
+      </section>
+    </aside>
+
+    <section class="factory-stage" aria-label="单工厂版本画面">
+      <header class="stage-header">
+        <div class="stage-title">
+          <span>PROJECT / FACTORY VISUAL / ACTIVE VERSION</span>
+          <strong id="selected-version-key">Factory v1.1</strong>
+        </div>
+        <div class="stage-mode">
+          <span>SINGLE FACTORY VIEW</span>
+          <strong>单工厂主视觉</strong>
+          <em id="selected-version-status">当前可运行版本</em>
+        </div>
+      </header>
+
+      <iframe
+        id="factory-stage-frame"
+        title="单工厂 3D 版本画面"
+        src="index.html?showcase=1&amp;solo=1&amp;version=1.1"
+        allow="fullscreen"
+      ></iframe>
+
+      <div id="stage-loading" class="stage-loading" aria-live="polite">
+        <span class="loading-ring"></span>
+        <strong id="stage-loading-title">正在装载 v1.1</strong>
+        <em>复用现有 Three.js 工厂场景</em>
+      </div>
+
+      <footer class="stage-footer">
+        <span><b>拖拽</b> 旋转视角</span>
+        <span><b>滚轮</b> 缩放空间</span>
+        <span class="footer-rule">左侧目录切换 / 右侧单版本展示</span>
+      </footer>
+
+      <nav class="stage-actions" aria-label="页面操作">
+        <button id="reload-version" type="button">↻ 重置当前版本</button>
+        <a id="open-scene" href="factory-scene.html" hidden>全屏打开 v1.2 ↗</a>
+        <a href="index.html">返回主工厂 ↗</a>
+      </nav>
+    </section>
+  </main>
+
+  <script type="module" src="factory-versions.js"></script>
+</body>
+</html>

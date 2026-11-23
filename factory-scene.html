@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#101416">
+  <title>智能3D工厂 · v1.2</title>
+  <link rel="stylesheet" href="factory-scene.css">
+  <script type="importmap">
+    {
+      "imports": {
+        "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
+        "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/"
+      }
+    }
+  </script>
+</head>
+<body>
+  <main id="factory-scene-stage" aria-label="智能3D工厂主场景">
+    <canvas id="factory-scene-canvas" aria-label="3D 工厂，可拖动旋转、滚轮缩放">浏览器需要支持 WebGL 才能显示 3D 工厂。</canvas>
+
+    <header class="scene-header">
+      <div class="scene-title-group">
+        <span class="scene-mark" aria-hidden="true"></span>
+        <div>
+          <h1>智能3D工厂</h1>
+          <p><span class="scene-version">v1.2</span><span class="scene-title-divider" aria-hidden="true"></span>主场景提炼</p>
+        </div>
+      </div>
+      <a class="scene-return-link" href="factory-versions.html?version=1.2"><span aria-hidden="true">←</span> 版本目录</a>
+    </header>
+
+    <div id="scene-loading" class="scene-loading" role="status" aria-live="polite">
+      <div class="scene-loading-content">
+        <span class="scene-loading-symbol" aria-hidden="true"></span>
+        <p id="scene-loading-status">正在构建工厂场景</p>
+        <p id="scene-error" class="scene-error" role="alert" hidden></p>
+      </div>
+    </div>
+
+    <footer class="scene-footer">
+      <nav class="scene-toolbar" aria-label="场景控制">
+        <div class="scene-control-group scene-view-controls" role="group" aria-label="视角">
+          <button type="button" class="scene-control" data-scene-view="overview" aria-pressed="true">全景</button>
+          <button type="button" class="scene-control" data-scene-view="top" aria-pressed="false">俯视</button>
+          <button type="button" class="scene-control" data-scene-view="tower" aria-pressed="false">中控塔</button>
+          <button type="button" class="scene-control" data-scene-view="line" aria-pressed="false">流水线</button>
+        </div>
+        <span class="scene-toolbar-divider" aria-hidden="true"></span>
+        <div class="scene-control-group scene-option-controls" role="group" aria-label="显示设置">
+          <button type="button" class="scene-control scene-toggle" data-scene-action="labels" aria-pressed="false"><span class="scene-toggle-dot" aria-hidden="true"></span>标注</button>
+          <button type="button" class="scene-control scene-toggle" data-scene-action="motion" aria-pressed="true"><span class="scene-toggle-dot" aria-hidden="true"></span>动效</button>
+          <button type="button" class="scene-control scene-reset" data-scene-action="reset" aria-label="重置视角">重置视角</button>
+        </div>
+      </nav>
+      <div class="scene-footer-meta">
+        <span id="scene-status" role="status" aria-live="polite">正在准备场景</span>
+        <span class="scene-interaction-hint">拖动旋转<span aria-hidden="true"> · </span>滚轮缩放</span>
+      </div>
+    </footer>
+  </main>
+  <script type="module" src="factory-scene.js"></script>
+</body>
+</html>

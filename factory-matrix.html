@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PFN Matrix Engine | 工厂矩阵网络</title>
+  <script>
+    if (window.location.protocol === 'file:') {
+      const servedUrl = new URL('http://localhost:8081/factory-matrix.html');
+      servedUrl.search = window.location.search;
+      servedUrl.hash = window.location.hash;
+      window.location.replace(servedUrl.href);
+    }
+  </script>
+  <link rel="stylesheet" href="factory-matrix.css">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='10' fill='%23121827'/%3E%3Cpath d='M12 18h40v28H12z' fill='none' stroke='%233ee898' stroke-width='5'/%3E%3Cpath d='M20 28h24M20 38h24' stroke='%233cc8ff' stroke-width='4' stroke-linecap='round'/%3E%3C/svg%3E">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700;800&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <script type="importmap">
+    {
+      "imports": {
+        "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
+        "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/"
+      }
+    }
+  </script>
+</head>
+<body>
+  <div id="matrix-canvas-shell">
+    <canvas id="matrix-canvas"></canvas>
+  </div>
+
+  <aside class="matrix-console matrix-console-right">
+    <div class="matrix-console-head">
+      <div class="matrix-kicker">AI KNOWLEDGE FACTORY OS / CHILD PAGE</div>
+      <h1>PFN Matrix Engine</h1>
+      <p>从单个个人工厂进入工厂网络子页面，扫描能力、需求、资源和信用，自动生成临时公司链路。</p>
+      <div class="matrix-topbar-actions">
+        <a class="matrix-btn subtle" href="index.html">返回主工厂</a>
+        <button id="matrix-auto-run" class="matrix-btn primary" type="button">机会雷达</button>
+      </div>
+    </div>
+
+    <div class="matrix-section-title">MATRIX DATA ENGINE</div>
+    <div class="matrix-stat-grid">
+      <div><span>矩阵工厂</span><strong>48</strong></div>
+      <div><span>撮合机会</span><strong>126</strong></div>
+      <div><span>可组公司</span><strong>7</strong></div>
+      <div><span>链路节点</span><strong>6</strong></div>
+    </div>
+
+    <div class="matrix-story-card">
+      <div class="matrix-story-head">
+        <span>OPPORTUNITY RADAR</span>
+        <strong id="story-score">96%</strong>
+      </div>
+      <h2 id="story-title">外部需求待进入</h2>
+      <p id="story-demand">点击「机会雷达」后，系统会从外部需求进入矩阵扫描，并生成临时公司任务分工。</p>
+      <div id="story-steps" class="story-steps"></div>
+    </div>
+
+    <div id="state-flow" class="state-flow"></div>
+    <div id="node-profile" class="node-profile"></div>
+
+    <div id="team-plan" class="team-plan"></div>
+    <div class="matrix-actions">
+      <button id="matrix-scan" class="matrix-btn primary" type="button">扫描矩阵</button>
+      <button id="matrix-highlight" class="matrix-btn" type="button">高亮匹配</button>
+      <button id="matrix-company" class="matrix-btn" type="button">生成临时公司</button>
+    </div>
+    <div id="matrix-status" class="matrix-status">矩阵子页面已启动，等待机会雷达扫描。</div>
+    <div class="matrix-rule-card">
+      <div><span>横轴</span><strong>数据接入 / 情报研究 / 需求洞察 / 产品策略 / 设计原型 / 开发执行 / 内容增长 / 交付信用</strong></div>
+      <div><span>纵轴</span><strong>AI 软件 / 电商零售 / 内容媒体 / 咨询研究 / 投资情报 / 企业运营</strong></div>
+      <div><span>规则</span><strong>每座个人工厂暴露可供应能力与待解决需求，矩阵引擎按信用、负载和能力互补度自动撮合。</strong></div>
+    </div>
+    <div id="opportunity-list" class="opportunity-list"></div>
+  </aside>
+
+  <div class="matrix-bottom-hint">
+    <span>拖拽旋转</span>
+    <span>滚轮缩放</span>
+    <span>点击工厂查看节点</span>
+  </div>
+
+  <script type="module" src="factory-matrix.js"></script>
+</body>
+</html>

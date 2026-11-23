@@ -1,0 +1,956 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AI Knowledge Factory OS | AI 驱动的知识管理工厂</title>
+  <link rel="stylesheet" href="style.css">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='10' fill='%23121827'/%3E%3Cpath d='M32 7 54 20v24L32 57 10 44V20z' fill='none' stroke='%233cc8ff' stroke-width='5'/%3E%3Cpath d='M20 27h24M20 37h24' stroke='%233ee898' stroke-width='4' stroke-linecap='round'/%3E%3C/svg%3E">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <script type="importmap">
+    {
+      "imports": {
+        "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
+        "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/"
+      }
+    }
+  </script>
+</head>
+<body>
+  <!-- Loading Screen -->
+  <div id="loading-screen">
+    <div class="loading-content">
+      <div class="loading-spinner"></div>
+      <div class="loading-text">KNOWLEDGE FACTORY BOOTING</div>
+      <div class="loading-progress"><span id="loading-pct">0</span>%</div>
+      <div class="loading-bar"><div class="loading-bar-fill"></div></div>
+      <div class="loading-detail" id="loading-detail">Initializing Knowledge Twin Engine...</div>
+    </div>
+  </div>
+
+  <!-- Canvas Container -->
+  <div id="canvas-container">
+    <canvas id="three-canvas"></canvas>
+  </div>
+
+  <!-- Top Status Bar -->
+  <div id="top-bar">
+    <div class="top-bar-left">
+      <span class="system-title">
+        <span class="sys-icon">⬡</span> AI KNOWLEDGE FACTORY OS v1.2
+      </span>
+      <span class="divider">|</span>
+      <span class="connection-status online">
+        <span class="status-dot"></span> AUTONOMOUS RUNNING
+      </span>
+      <span class="divider">|</span>
+      <span id="clock">12:00:00</span>
+    </div>
+    <div id="mode-switch" aria-label="工作模式切换">
+      <button class="mode-btn active" type="button" data-work-mode="run">运行</button>
+      <button class="mode-btn" type="button" data-work-mode="inspect">巡检</button>
+      <button class="mode-btn" type="button" data-work-mode="edit">编辑</button>
+    </div>
+    <div class="top-bar-right">
+      <span class="kpi-mini">
+        <span class="kpi-mini-label">CYCLE</span>
+        <span class="kpi-mini-val" id="cycle-counter">#127</span>
+      </span>
+      <span class="kpi-mini">
+        <span class="kpi-mini-label">HEARTBEAT</span>
+        <span class="kpi-mini-val" id="heartbeat-counter">10/10</span>
+      </span>
+      <span class="kpi-mini">
+        <span class="kpi-mini-label">BACKLOG</span>
+        <span class="kpi-mini-val" id="backlog-counter">42</span>
+      </span>
+      <span class="kpi-mini">
+        <span class="kpi-mini-label">BLOCKED</span>
+        <span class="kpi-mini-val warn" id="blocked-counter">3</span>
+      </span>
+      <span class="kpi-mini">
+        <span class="kpi-mini-label">OUTPUTS</span>
+        <span class="kpi-mini-val" id="outputs-counter">18</span>
+      </span>
+      <span class="kpi-mini">
+        <span class="kpi-mini-label">UPTIME</span>
+        <span class="kpi-mini-val" id="uptime-counter">127h</span>
+      </span>
+      <span class="kpi-mini kpi-mini-technical">
+        <span class="kpi-mini-label">FPS</span>
+        <span class="kpi-mini-val" id="fps-counter">60</span>
+      </span>
+      <span class="kpi-mini kpi-mini-technical">
+        <span class="kpi-mini-label">LATENCY</span>
+        <span class="kpi-mini-val" id="latency-counter">12ms</span>
+      </span>
+    </div>
+  </div>
+
+  <!-- Left Sidebar - KPIs & Metrics -->
+  <div id="left-sidebar">
+    <div class="sidebar-header">
+      <span class="sidebar-title">AUTONOMOUS OPS</span>
+      <span class="sidebar-subtitle">7*24 自运行运营状态</span>
+    </div>
+
+    <div class="metric-card">
+      <div class="metric-icon order-icon">IN</div>
+      <div class="metric-info">
+        <div class="metric-label">待处理队列</div>
+        <div class="metric-value" id="metric-orders">42</div>
+        <div class="metric-change neutral">━ 自动摄入：意图/文档/链接/代码</div>
+      </div>
+    </div>
+
+    <div class="metric-card">
+      <div class="metric-icon robot-icon">RF</div>
+      <div class="metric-info">
+        <div class="metric-label">正在处理</div>
+        <div class="metric-value" id="metric-robots">19<span class="metric-unit">项</span></div>
+        <div class="metric-change up">● Agent 持续加工中</div>
+      </div>
+    </div>
+
+    <div class="metric-card">
+      <div class="metric-icon sort-icon">RU</div>
+      <div class="metric-info">
+        <div class="metric-label">今日有效产出</div>
+        <div class="metric-value" id="metric-sort">18<span class="metric-unit">项</span></div>
+        <div class="metric-change up">▲ 行动卡/复盘/模板/图谱更新</div>
+      </div>
+    </div>
+
+    <div class="metric-card">
+      <div class="metric-icon cap-icon">CF</div>
+      <div class="metric-info">
+        <div class="metric-label">阻塞任务</div>
+        <div class="metric-value alert" id="metric-capacity">3</div>
+        <div class="metric-change down">⚠ 需要确认或补来源</div>
+      </div>
+    </div>
+
+    <div class="metric-card">
+      <div class="metric-icon temp-icon">ST</div>
+      <div class="metric-info">
+        <div class="metric-label">人工介入请求</div>
+        <div class="metric-value" id="metric-temp">2</div>
+        <div class="metric-change neutral">━ 等待用户判定</div>
+      </div>
+    </div>
+
+    <div class="metric-card">
+      <div class="metric-icon alert-icon">AG</div>
+      <div class="metric-info">
+        <div class="metric-label">Agent 平均负载</div>
+        <div class="metric-value alert" id="metric-alerts">72<span class="metric-unit">%</span></div>
+        <div class="metric-change down">⚠ QA 与解析负载偏高</div>
+      </div>
+    </div>
+
+    <div class="asset-ledger">
+      <div class="ledger-header">
+        <span>ASSET STORES</span>
+        <span>持续沉淀资产</span>
+      </div>
+      <div class="asset-row knowledge"><span>知识资产</span><strong>3,284</strong></div>
+      <div class="asset-row skill"><span>技能资产</span><strong>126</strong></div>
+      <div class="asset-row experience"><span>经验资产</span><strong>512</strong></div>
+      <div class="asset-row task"><span>任务资产</span><strong>48</strong></div>
+      <div class="asset-row kit"><span>套件资产</span><strong>93</strong></div>
+    </div>
+  </div>
+
+  <!-- Right Sidebar - Task Queue & Alerts -->
+  <div id="right-sidebar">
+    <!-- Camera Controls -->
+    <div class="sidebar-header">
+      <span class="sidebar-title">SYSTEM VIEW</span>
+      <span class="sidebar-subtitle">自运行工厂视角</span>
+    </div>
+    <div id="camera-presets">
+      <button class="cam-btn active" data-view="dual">双工厂总览</button>
+      <button class="cam-btn" data-view="factory1">工厂 1</button>
+      <button class="cam-btn" data-view="factory2">工厂 2</button>
+      <button class="cam-btn" data-view="free">自由视角</button>
+      <button class="cam-btn" data-view="overview">全局闭环</button>
+      <button class="cam-btn" data-view="intake">原料入口</button>
+      <button class="cam-btn" data-view="quality">AI 质检</button>
+      <button class="cam-btn" data-view="refinery">知识炼制</button>
+      <button class="cam-btn" data-view="assets">五类资产</button>
+      <button class="cam-btn" data-view="output">行动输出</button>
+      <button class="cam-btn" data-view="evolve">回路中心</button>
+      <button class="cam-btn" data-view="cruise">Agent 巡航</button>
+    </div>
+
+    <!-- Task Queue -->
+    <div class="sidebar-header" style="margin-top: 16px;">
+      <span class="sidebar-title">LIVE QUEUE</span>
+      <span class="sidebar-subtitle">实时任务生命周期</span>
+    </div>
+    <div id="task-queue">
+      <div class="task-item status-running">
+        <div class="task-status-dot"></div>
+        <div class="task-body">
+          <div class="task-name">Ingest Worker · 新原料入队</div>
+          <div class="task-detail">原料入口 → AI质检闸口 | 预计 2.4s</div>
+        </div>
+      </div>
+      <div class="task-item status-running">
+        <div class="task-status-dot"></div>
+        <div class="task-body">
+          <div class="task-name">Filter Agent · 来源可信度检查</div>
+          <div class="task-detail">AI质检区 → 知识炼制区 | 预计 5.1s</div>
+        </div>
+      </div>
+      <div class="task-item status-pending">
+        <div class="task-status-dot"></div>
+        <div class="task-body">
+          <div class="task-name">Graph Builder · 冲突边消解</div>
+          <div class="task-detail">知识资产仓 → AI质检区 | 排队中</div>
+        </div>
+      </div>
+      <div class="task-item status-running">
+        <div class="task-status-dot"></div>
+        <div class="task-body">
+          <div class="task-name">Briefing Engine · 今日行动卡</div>
+          <div class="task-detail">五类资产仓 → 行动输出区 | 进行中</div>
+        </div>
+      </div>
+      <div class="task-item status-pending">
+        <div class="task-status-dot"></div>
+        <div class="task-body">
+          <div class="task-name">Recall Matcher · 经验召回</div>
+          <div class="task-detail">经验资产仓 → 回路中心 | 周期复核</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="sidebar-header" style="margin-top: 16px;">
+      <span class="sidebar-title">AGENT FLEET</span>
+      <span class="sidebar-subtitle">Agent 工人状态</span>
+    </div>
+    <div id="agent-fleet"></div>
+
+    <div class="sidebar-header" style="margin-top: 16px;">
+      <span class="sidebar-title">OUTPUTS</span>
+      <span class="sidebar-subtitle">今日自动产出</span>
+    </div>
+    <div id="push-panel">
+      <div class="push-item push-brief">
+        <div class="push-name">晨间简报已生成</div>
+        <div class="push-detail">昨晚炼制 37 项资产，今日建议聚焦 WebGPU 粒子系统。</div>
+      </div>
+      <div class="push-item push-action">
+        <div class="push-name">行动卡 · 先补 WGSL 基础</div>
+        <div class="push-detail">关联技能缺口：Shader ★★ → ★★★，验收为完成 1 个 compute demo。</div>
+      </div>
+      <div class="push-item push-recall">
+        <div class="push-name">经验召回 · 移动端帧率风险</div>
+        <div class="push-detail">上次光照方案导致帧率下降 40%，建议先加性能测试。</div>
+      </div>
+    </div>
+
+    <!-- Alert Panel -->
+    <div class="sidebar-header" style="margin-top: 16px;">
+      <span class="sidebar-title">ACTIONABLE ALERTS</span>
+      <span class="sidebar-subtitle">可处理运营告警</span>
+    </div>
+    <div id="alert-panel">
+      <div class="alert-item alert-warn">
+        <div class="alert-indicator"></div>
+        <div class="alert-body">
+          <div class="alert-name">战略判断 #M-042 超过复核周期</div>
+          <div class="alert-time">14:32:18 · 已过期 12 天 · 冷链复核</div>
+        </div>
+      </div>
+      <div class="alert-item alert-warn">
+        <div class="alert-indicator"></div>
+        <div class="alert-body">
+          <div class="alert-name">GLM Provider 结论存在 2 条互斥引用</div>
+          <div class="alert-time">14:28:41 · 冲突待消解 · Graph Builder</div>
+        </div>
+      </div>
+      <div class="alert-item alert-warn">
+        <div class="alert-indicator"></div>
+        <div class="alert-body">
+          <div class="alert-name">会议纪要碎片缺少原始来源链接</div>
+          <div class="alert-time">14:21:06 · 影响 17 项资产 · Filter Agent</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Bottom Info Bar (Object Info on click) -->
+  <div id="object-info-panel" class="hidden">
+    <div class="obj-info-header">
+      <span id="obj-info-title">OBJECT DETAILS</span>
+      <button id="obj-info-close">✕</button>
+    </div>
+    <div id="obj-info-content"></div>
+  </div>
+
+  <!-- Bottom Center Animation Toggle -->
+  <div id="bottom-controls">
+    <button id="toggle-ingest" class="ctrl-btn primary-action" aria-expanded="false" aria-controls="ingest-panel">
+      <span class="ctrl-icon">＋</span><span class="ctrl-text">投喂原料</span>
+    </button>
+    <button id="toggle-animation" class="ctrl-btn active">
+      <span class="ctrl-icon">▶</span><span class="ctrl-text">产线流动</span>
+    </button>
+    <button id="toggle-ops-panel" class="ctrl-btn" aria-expanded="false" aria-controls="left-sidebar right-sidebar">
+      <span class="ctrl-icon">▤</span><span class="ctrl-text">运营面板</span>
+    </button>
+    <button id="toggle-executive-tower" class="ctrl-btn" aria-expanded="false" aria-controls="executive-tower">
+      <span class="ctrl-icon">⌂</span><span class="ctrl-text">中控塔</span>
+    </button>
+    <button id="toggle-factory-network" class="ctrl-btn" aria-expanded="false" aria-controls="factory-network-panel">
+      <span class="ctrl-icon">◎</span><span class="ctrl-text">工厂网络</span>
+    </button>
+    <button id="toggle-opportunity-radar" class="ctrl-btn" aria-label="打开机会雷达子页面">
+      <span class="ctrl-icon">⌖</span><span class="ctrl-text">机会雷达</span>
+    </button>
+    <button id="toggle-factory-matrix" class="ctrl-btn" aria-label="打开工厂矩阵子页面">
+      <span class="ctrl-icon">▦</span><span class="ctrl-text">工厂矩阵</span>
+    </button>
+    <a id="open-factory-versions" class="ctrl-btn" href="factory-versions.html" aria-label="打开双工厂版本实验室">
+      <span class="ctrl-icon">◫</span><span class="ctrl-text">版本对比</span>
+    </a>
+    <button id="toggle-night" class="ctrl-btn">
+      <span class="ctrl-icon">🌙</span><span class="ctrl-text">夜班巡检</span>
+    </button>
+    <button id="toggle-theme" class="ctrl-btn">
+      <span class="ctrl-icon">☼</span><span class="ctrl-text">浅色模式</span>
+    </button>
+    <button id="toggle-wireframe" class="ctrl-btn">
+      <span class="ctrl-icon">⌁</span> 结构视图
+    </button>
+    <button id="toggle-labels" class="ctrl-btn active" aria-expanded="false" aria-controls="text-layer-menu">
+      <span class="ctrl-icon">Aa</span><span class="ctrl-text">文字标注</span>
+    </button>
+    <button id="toggle-policy" class="ctrl-btn" aria-expanded="false" aria-controls="policy-panel">
+      <span class="ctrl-icon">⚙</span><span class="ctrl-text">自运行策略</span>
+    </button>
+    <button id="toggle-layout-editor" class="ctrl-btn" aria-expanded="false" aria-controls="layout-editor-panel">
+      <span class="ctrl-icon">↕</span><span class="ctrl-text">编辑布局</span>
+    </button>
+    <button id="toggle-component-console" class="ctrl-btn" aria-expanded="false" aria-controls="component-console">
+      <span class="ctrl-icon">▦</span><span class="ctrl-text">组件后台</span>
+    </button>
+  </div>
+
+  <!-- Knowledge Intake Panel -->
+  <div id="ingest-panel" class="hidden" role="dialog" aria-label="投喂原料">
+    <div class="text-menu-header">
+      <div>
+        <div class="text-menu-title">投喂原料</div>
+        <div class="text-menu-subtitle">输入意图或资料，生成一条自运行资产任务</div>
+      </div>
+      <button id="ingest-panel-close" aria-label="关闭投喂原料">✕</button>
+    </div>
+    <form id="ingest-form">
+      <div class="ingest-grid">
+        <label>
+          <span>原料类型</span>
+          <select id="ingest-type">
+            <option value="INT">意图 / 想法</option>
+            <option value="PDF">PDF / 文档</option>
+            <option value="WEB">网页 / 链接</option>
+            <option value="WR">读书笔记</option>
+            <option value="MEET">会议纪要</option>
+            <option value="CODE">代码片段</option>
+          </select>
+        </label>
+        <label>
+          <span>目标资产</span>
+          <select id="ingest-target">
+            <option value="task">任务资产</option>
+            <option value="knowledge">知识资产</option>
+            <option value="skill">技能资产</option>
+            <option value="experience">经验资产</option>
+            <option value="kit">套件资产</option>
+          </select>
+        </label>
+      </div>
+      <label class="ingest-field">
+        <span>任务标题</span>
+        <input id="ingest-title" type="text" maxlength="48" placeholder="例如：整理 Three.js 性能优化资料">
+      </label>
+      <label class="ingest-field">
+        <span>原始内容</span>
+        <textarea id="ingest-content" rows="5" placeholder="粘贴意图、资料摘要、会议片段、代码或链接。"></textarea>
+      </label>
+      <div class="ingest-actions">
+        <div id="ingest-hint">提交后会进入 Live Queue，并在 3D 流水线上生成一个新物料。</div>
+        <button type="submit">生成任务</button>
+      </div>
+    </form>
+  </div>
+
+  <!-- Factory Layout Editor -->
+  <section id="layout-editor-panel" class="hidden" aria-label="工厂布局编辑器">
+    <div class="layout-editor-header">
+      <div>
+        <div class="layout-editor-kicker">FACTORY LAYOUT</div>
+        <div class="layout-editor-title">工厂布局编辑器</div>
+      </div>
+      <button id="layout-editor-close" aria-label="退出编辑">✕</button>
+    </div>
+
+    <div class="layout-editor-mode-row">
+      <button id="layout-mode-translate" class="layout-mode-btn active" type="button" data-layout-mode="translate">移动</button>
+      <button id="layout-mode-rotate" class="layout-mode-btn" type="button" data-layout-mode="rotate">旋转</button>
+      <button id="layout-snap-toggle" class="layout-mode-btn active" type="button">吸附 0.5m / 15°</button>
+    </div>
+
+    <div class="layout-nudge-grid" aria-label="位置微调">
+      <button class="layout-nudge-btn" type="button" data-layout-nudge="z:-1">↑</button>
+      <button class="layout-nudge-btn" type="button" data-layout-nudge="x:-1">←</button>
+      <button class="layout-nudge-btn" type="button" data-layout-nudge="x:1">→</button>
+      <button class="layout-nudge-btn" type="button" data-layout-nudge="z:1">↓</button>
+      <button class="layout-nudge-btn" type="button" data-layout-rotate="-1">⟲</button>
+      <button class="layout-nudge-btn" type="button" data-layout-rotate="1">⟳</button>
+    </div>
+
+    <label class="layout-search">
+      <span>一级可编排模块</span>
+      <input id="layout-object-search" type="search" placeholder="资产仓 / conveyor / 质检 / 输出">
+    </label>
+
+    <div id="layout-object-list" class="layout-object-list"></div>
+    <div id="layout-current-detail" class="layout-current-detail"></div>
+
+    <div class="layout-editor-actions">
+      <button id="layout-save" class="console-btn primary" type="button">保存布局</button>
+      <button id="layout-reset" class="console-btn" type="button">恢复默认</button>
+    </div>
+    <div id="layout-status" class="layout-status">选择一个可编排组件</div>
+  </section>
+
+  <!-- Factory Network Layer Panel -->
+  <section id="factory-network-panel" class="hidden" aria-label="工厂网络">
+    <div class="factory-network-header">
+      <div>
+        <div class="factory-network-kicker">FACTORY NETWORK LAYER</div>
+        <div class="factory-network-title">个人工厂网络</div>
+      </div>
+      <button id="factory-network-close" aria-label="关闭工厂网络">✕</button>
+    </div>
+
+    <div class="network-stat-grid">
+      <div><span>匹配机会</span><strong>8</strong></div>
+      <div><span>可调用工厂</span><strong>10</strong></div>
+      <div><span>临时供应链</span><strong>3</strong></div>
+      <div><span>信用增益</span><strong>+18</strong></div>
+    </div>
+
+    <div class="factory-profile-card">
+      <div class="factory-profile-title">我的工厂五要素</div>
+      <div class="profile-factor"><span>意图</span><strong>构建 Personal Factory Network</strong></div>
+      <div class="profile-factor"><span>需求</span><strong>市场验证 / UI 设计 / 内容传播</strong></div>
+      <div class="profile-factor"><span>资源</span><strong>3D Demo / Codex / 产品文档 / 知识资产</strong></div>
+      <div class="profile-factor"><span>能力</span><strong>AI 产品原型 / 项目运营 / 知识系统设计</strong></div>
+      <div class="profile-factor"><span>信用</span><strong>持续迭代记录 / 可验证交付资产</strong></div>
+    </div>
+
+    <div class="factory-network-actions">
+      <button id="network-scan" class="console-btn primary" type="button">扫描匹配</button>
+      <button id="network-chain" class="console-btn" type="button">生成供应链</button>
+      <button id="network-return" class="console-btn" type="button">返回主工厂</button>
+    </div>
+
+    <div class="network-opportunity-list" id="factory-network-opportunities"></div>
+    <div id="factory-network-status" class="factory-network-status">网络层待启动</div>
+  </section>
+
+  <!-- Factory Matrix Layer Panel -->
+  <section id="factory-matrix-panel" class="hidden" aria-label="工厂矩阵网络">
+    <div class="factory-matrix-page-shell">
+      <header class="factory-matrix-page-header">
+        <div>
+          <div class="factory-network-kicker">PFN MATRIX ENGINE</div>
+          <div class="factory-network-title">工厂矩阵 · 自动撮合</div>
+          <p>每个人的工厂作为一个生产节点，系统自动扫描意图、需求、资源、能力与信用，生成临时公司链路。</p>
+        </div>
+        <div class="factory-matrix-header-actions">
+          <button id="matrix-return" class="console-btn primary" type="button">返回主工厂</button>
+          <button id="factory-matrix-close" aria-label="关闭工厂矩阵">✕</button>
+        </div>
+      </header>
+
+      <aside class="factory-matrix-left-console">
+        <div class="network-stat-grid">
+          <div><span>矩阵工厂</span><strong>48</strong></div>
+          <div><span>撮合机会</span><strong>126</strong></div>
+          <div><span>可组公司</span><strong>7</strong></div>
+          <div><span>链路节点</span><strong>6</strong></div>
+        </div>
+
+        <div class="factory-profile-card">
+          <div class="factory-profile-title">Matrix Data Engine</div>
+          <div class="profile-factor"><span>横轴</span><strong>数据接入 → 情报研究 → 需求洞察 → 产品策略 → 设计原型 → 开发执行 → 内容增长 → 交付信用</strong></div>
+          <div class="profile-factor"><span>纵轴</span><strong>AI 软件 / 电商零售 / 内容媒体 / 咨询研究 / 投资情报 / 企业运营</strong></div>
+          <div class="profile-factor"><span>规则</span><strong>系统扫描每个个人工厂的意图、需求、资源、能力与信用，自动生成临时公司链路</strong></div>
+        </div>
+
+        <div class="factory-network-actions">
+          <button id="matrix-scan" class="console-btn primary" type="button">扫描矩阵</button>
+          <button id="matrix-highlight" class="console-btn" type="button">高亮匹配</button>
+          <button id="matrix-company" class="console-btn" type="button">生成临时公司</button>
+        </div>
+        <div id="factory-matrix-status" class="factory-network-status">矩阵层待启动</div>
+      </aside>
+
+      <aside class="factory-matrix-right-console">
+        <div class="matrix-story-card" id="matrix-story-card">
+          <div class="matrix-story-head">
+            <span>OPPORTUNITY RADAR</span>
+            <strong id="matrix-story-score">96%</strong>
+          </div>
+          <div id="matrix-story-title" class="matrix-story-title">外部需求待进入</div>
+          <div id="matrix-story-demand" class="matrix-story-demand">点击「机会雷达」后，系统会自动从需求雷达进入矩阵扫描，并生成临时公司任务分工。</div>
+          <div id="matrix-story-steps" class="matrix-story-steps"></div>
+        </div>
+
+        <div class="matrix-team-plan" id="matrix-team-plan"></div>
+        <div class="network-opportunity-list" id="factory-matrix-opportunities"></div>
+      </aside>
+    </div>
+  </section>
+
+  <!-- Autonomous Policy Panel -->
+  <div id="policy-panel" class="hidden" role="dialog" aria-label="自运行策略">
+    <div class="text-menu-header">
+      <div>
+        <div class="text-menu-title">自运行策略</div>
+        <div class="text-menu-subtitle">工厂 7*24 自动执行的默认运营规则</div>
+      </div>
+      <button id="policy-panel-close" aria-label="关闭自运行策略">✕</button>
+    </div>
+    <div class="policy-grid">
+      <div class="policy-item">
+        <strong>摄入策略</strong>
+        <span>资料进入后自动识别类型、提取来源、生成任务实例。</span>
+      </div>
+      <div class="policy-item">
+        <strong>质检策略</strong>
+        <span>缺来源、互斥结论、重复资产、过期内容优先进入 QA 队列。</span>
+      </div>
+      <div class="policy-item">
+        <strong>资产策略</strong>
+        <span>高复用、高置信、高业务价值内容自动进入长期资产候选。</span>
+      </div>
+      <div class="policy-item">
+        <strong>行动策略</strong>
+        <span>每日自动输出行动卡、风险提示、复盘建议和可复用模板。</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Text Layer Visibility Menu -->
+  <div id="text-layer-menu" class="hidden" role="dialog" aria-label="文字标注设置">
+    <div class="text-menu-header">
+      <div>
+        <div class="text-menu-title">文字标注</div>
+        <div class="text-menu-subtitle">选择 3D 主视觉中需要显示的标注层级</div>
+      </div>
+      <button id="text-menu-close" aria-label="关闭文字标注设置">✕</button>
+    </div>
+    <div class="text-layer-options">
+      <label class="text-layer-option">
+        <input type="checkbox" data-layer="l1" checked>
+        <span>
+          <strong>L1 · 主区域大标题</strong>
+          <small>01 原料入口、02 AI 质检闸口、五类资产仓、回路中心</small>
+        </span>
+      </label>
+      <label class="text-layer-option">
+        <input type="checkbox" data-layer="l2" checked>
+        <span>
+          <strong>L2 · 地面区域标签</strong>
+          <small>原料入口 · INPUT、知识炼制区 · REFINE 等地面功能区</small>
+        </span>
+      </label>
+      <label class="text-layer-option">
+        <input type="checkbox" data-layer="l3" checked>
+        <span>
+          <strong>L3 · 流程说明标签</strong>
+          <small>丢 → 收、炼、沉、推 → 做 → 进等解释性长句</small>
+        </span>
+      </label>
+      <label class="text-layer-option">
+        <input type="checkbox" data-layer="l4" checked>
+        <span>
+          <strong>L4 · 资产仓彩色标签</strong>
+          <small>知识资产仓、技能资产仓、经验资产仓、任务资产仓、套件资产仓</small>
+        </span>
+      </label>
+      <label class="text-layer-option">
+        <input type="checkbox" data-layer="l5" checked>
+        <span>
+          <strong>L5 · 设施与工位标签</strong>
+          <small>能力中控塔、AI 质检工位、行动输出区、回路中心进化说明</small>
+        </span>
+      </label>
+      <label class="text-layer-option">
+        <input type="checkbox" data-layer="l6" checked>
+        <span>
+          <strong>L6 · Agent / 能量站小标签</strong>
+          <small>Agent 推理能量站等辅助运维标注</small>
+        </span>
+      </label>
+      <label class="text-layer-option">
+        <input type="checkbox" data-layer="l7" checked>
+        <span>
+          <strong>L7 · 流动物料小标签</strong>
+          <small>INT、PDF、WEB、MEET、CODE 等原料类型短标记</small>
+        </span>
+      </label>
+      <label class="text-layer-option">
+        <input type="checkbox" data-layer="l8" checked>
+        <span>
+          <strong>L8 · 其他辅助标签</strong>
+          <small>发布打包区等弱关联辅助说明</small>
+        </span>
+      </label>
+    </div>
+    <div class="text-menu-actions">
+      <button id="show-all-text" class="text-action-btn">全部显示</button>
+      <button id="clean-view-text" class="text-action-btn primary">隐藏全部</button>
+    </div>
+  </div>
+
+  <!-- Component Console -->
+  <section id="component-console" class="hidden" aria-label="组件系统后台">
+    <div class="component-console-shell">
+      <header class="component-console-header">
+        <div>
+          <div class="console-kicker">AI KNOWLEDGE FACTORY · OBJECT REGISTRY</div>
+          <h2>组件系统后台</h2>
+          <p>追踪当前 3D 工厂中的每一个 Object3D、业务语义、模块归属与代码来源。</p>
+        </div>
+        <div class="console-header-actions">
+          <button id="component-export-json" class="console-btn">导出 JSON</button>
+          <button id="component-console-close" class="console-btn primary">返回 3D 工厂</button>
+        </div>
+      </header>
+
+      <div id="component-stats" class="component-stats"></div>
+
+      <div class="component-console-body">
+        <aside class="component-module-nav">
+          <div class="console-panel-title">模块</div>
+          <div id="component-module-list"></div>
+        </aside>
+
+        <main class="component-registry-main">
+          <div class="component-toolbar">
+            <label class="component-search">
+              <span>搜索对象</span>
+              <input id="component-search-input" type="search" placeholder="知识资产仓 / conveyor / AGV-01 / L7">
+            </label>
+            <label>
+              <span>层级</span>
+              <select id="component-level-filter">
+                <option value="all">全部层级</option>
+                <option value="L1 业务组件">L1 业务组件</option>
+                <option value="L2 组合对象">L2 组合对象</option>
+                <option value="L3 子物件">L3 子物件</option>
+              </select>
+            </label>
+            <label>
+              <span>类型</span>
+              <select id="component-type-filter">
+                <option value="all">全部类型</option>
+              </select>
+            </label>
+          </div>
+
+          <div class="component-filter-row">
+            <label><input id="component-unmapped-filter" type="checkbox"> 只看待补语义</label>
+            <label><input id="component-interactive-filter" type="checkbox"> 只看可交互</label>
+            <label><input id="component-label-filter" type="checkbox"> 只看文字标注</label>
+          </div>
+
+          <div class="component-table-wrap">
+            <table class="component-table">
+              <thead>
+                <tr>
+                  <th>对象</th>
+                  <th>模块</th>
+                  <th>类型</th>
+                  <th>层级</th>
+                  <th>状态</th>
+                  <th>位置</th>
+                </tr>
+              </thead>
+              <tbody id="component-object-list"></tbody>
+            </table>
+          </div>
+        </main>
+
+        <aside class="component-detail-panel">
+          <div class="console-panel-title">对象详情</div>
+          <div id="component-detail-content" class="component-detail-content"></div>
+        </aside>
+      </div>
+    </div>
+  </section>
+
+  <!-- Executive Tower Interior -->
+  <section id="executive-tower" class="hidden" role="dialog" aria-label="AI 高管作战室">
+    <div class="executive-tower-shell">
+      <header class="tower-room-header">
+        <div>
+          <div class="tower-room-kicker">AI EXECUTIVE TEAM TOWER</div>
+          <h2>中控塔内部 · GLM-5.2 协作指挥舱</h2>
+          <p>五个 AI 高管队友把意图会诊、临时协作舱和工厂任务回流连成一条经营链路。</p>
+        </div>
+        <div class="tower-model-strip" aria-live="polite">
+          <span id="tower-model-route">GLM-5.2 ROUTE</span>
+          <strong id="tower-model-status">检查模型连接</strong>
+          <em id="tower-model-latency">local fallback ready</em>
+        </div>
+        <div class="tower-room-actions">
+          <button id="tower-network-jump" class="tower-action-btn">进入工厂矩阵</button>
+          <button id="executive-tower-close" class="tower-action-btn primary">返回工厂</button>
+        </div>
+      </header>
+
+      <main class="tower-room-layout">
+        <section class="tower-room-stage" aria-label="塔内空间">
+          <div class="tower-room-bg-grid"></div>
+          <div class="tower-cockpit-hud" aria-hidden="true">
+            <div class="tower-hud-rail tower-hud-left">
+              <div class="tower-hud-block">
+                <span>OPS LOAD</span>
+                <strong>43 / 19 / 2</strong>
+                <em>队列 · 处理中 · 阻塞</em>
+              </div>
+              <div class="tower-hud-block">
+                <span>COLLAB PODS</span>
+                <strong>Temp Room</strong>
+                <em>会议结论可发射成临时协作舱</em>
+              </div>
+              <div class="tower-hud-block">
+                <span>MODEL BUS</span>
+                <strong>GLM-5.2</strong>
+                <em>五高管共用实时推理通道</em>
+              </div>
+            </div>
+            <div class="tower-hud-bottom">
+              <div class="tower-handoff-rail">
+                <span>INTENT</span>
+                <i></i>
+                <span>BOARD</span>
+                <i></i>
+                <span>TEMP POD</span>
+                <i></i>
+                <span>FACTORY TASK</span>
+              </div>
+              <div class="tower-hud-note">
+                <strong>协作优先</strong>
+                <span>中控塔不只是问答面板，而是把人、AI 高管、临时项目空间和外部流水线编排到同一个生产回路。</span>
+              </div>
+            </div>
+          </div>
+          <div class="tower-observation-window">
+            <div class="window-title">透明观察窗 · 外部工厂实时运行</div>
+            <div class="window-factory-mini">
+              <span></span><span></span><span></span><span></span>
+              <i></i><i></i><i></i>
+            </div>
+          </div>
+
+          <div class="tower-wall-screen screen-left">
+            <strong>OPERATIONS</strong>
+            <span>队列 43 · 处理 19 · 阻塞 2</span>
+          </div>
+          <div class="tower-wall-screen screen-right">
+            <strong>VALUE</strong>
+            <span>可复用资产 21 · 机会 8</span>
+          </div>
+          <div class="tower-network-gate">
+            <strong>PFN GATE</strong>
+            <span>自动撮合 · 临时公司 · 协作供应链</span>
+          </div>
+
+          <div class="tower-intent-table">
+            <div class="intent-orbit"></div>
+            <div class="intent-core">
+              <span>当前经营意图</span>
+              <strong>打磨 Personal Factory Network Demo</strong>
+              <em>让工厂从展示升级为可经营、可产出、可撮合的个人生产组织</em>
+            </div>
+            <div class="intent-metrics">
+              <span><b>24h</b>自运行</span>
+              <span><b>5</b>高管 Agent</span>
+              <span><b>8</b>机会候选</span>
+            </div>
+          </div>
+
+          <button class="executive-agent-seat seat-ceo active" data-executive-agent="ceo" type="button">
+            <span>CEO</span><strong>方向与优先级</strong><em>今日主线决策</em>
+          </button>
+          <button class="executive-agent-seat seat-cio" data-executive-agent="cio" type="button">
+            <span>CIO</span><strong>信息与知识流</strong><em>资料缺口扫描</em>
+          </button>
+          <button class="executive-agent-seat seat-coo" data-executive-agent="coo" type="button">
+            <span>COO</span><strong>运营与执行</strong><em>队列调度中</em>
+          </button>
+          <button class="executive-agent-seat seat-cto" data-executive-agent="cto" type="button">
+            <span>CTO</span><strong>技术与自动化</strong><em>调用开发工具链</em>
+          </button>
+          <button class="executive-agent-seat seat-cfo" data-executive-agent="cfo" type="button">
+            <span>CFO</span><strong>资源与价值</strong><em>收益机会评估</em>
+          </button>
+        </section>
+
+        <section id="tower-decision-dock" class="tower-decision-dock" aria-label="今日决策流">
+          <header class="tower-dock-head">
+            <div>
+              <span>TODAY DECISION FLOW</span>
+              <strong>今日决策流</strong>
+            </div>
+            <button id="tower-decision-dock-toggle" class="tower-icon-btn" type="button" aria-expanded="true" aria-controls="tower-decision-flow-wrap">收起</button>
+          </header>
+          <div id="tower-decision-flow-wrap" class="tower-decision-flow-wrap">
+            <ol id="tower-decision-flow" class="tower-decision-flow">
+              <li><span>CEO</span><strong>确定今日主线：优先打磨塔内经营叙事。</strong></li>
+              <li><span>CIO</span><strong>补齐输入：整理用户讨论、竞品信号和行业素材。</strong></li>
+              <li><span>COO</span><strong>拆成任务：入口、空间、详情、网络跳转和验收。</strong></li>
+              <li><span>CTO</span><strong>执行自动化：调用 Codex / 脚本 / 前端组件升级。</strong></li>
+              <li><span>CFO</span><strong>评估价值：沉淀 demo 素材、产品资产和潜在商业机会。</strong></li>
+            </ol>
+          </div>
+        </section>
+
+        <aside id="tower-agent-dock" class="tower-agent-dock" aria-label="高管状态与资料">
+          <button id="tower-agent-dock-toggle" class="tower-dock-tab" type="button" aria-expanded="true" aria-controls="tower-agent-dock-body">高管</button>
+          <div id="tower-agent-dock-body" class="tower-agent-dock-body">
+            <div class="tower-panel-head">
+              <span>ACTIVE EXECUTIVE</span>
+              <strong id="tower-active-agent">CEO Agent</strong>
+            </div>
+
+            <div id="tower-model-card" class="tower-model-card" data-model-state="checking" aria-live="polite">
+              <div>
+                <span>MODEL ORCHESTRATION</span>
+                <strong id="tower-model-card-title">正在检测 GLM-5.2</strong>
+              </div>
+              <p id="tower-model-card-detail">中控塔会优先调用本地后端代理的 GLM-5.2；未配置密钥或调用失败时回落到内置经营规则。</p>
+            </div>
+
+            <div id="executive-agent-detail" class="executive-agent-detail"></div>
+
+            <section class="tower-agent-watch">
+              <div class="tower-panel-head compact">
+                <span>WATCHING TASKS</span>
+                <strong>高管盯着的任务</strong>
+              </div>
+              <div id="tower-agent-watch-list" class="tower-agent-watch-list"></div>
+            </section>
+
+            <div id="tower-task-handoff" class="tower-task-handoff" data-handoff-status="idle" aria-live="polite">
+              <div>
+                <span>FACTORY HANDOFF</span>
+                <strong id="tower-handoff-title">等待会议结论</strong>
+              </div>
+              <p id="tower-handoff-detail">召集高管群聊后，可把结论生成工厂任务并回流到外部 Live Queue 与流水线。</p>
+            </div>
+
+            <div class="tower-chat-ops">
+              <button id="tower-create-task" class="tower-action-btn" type="button" disabled>生成工厂任务</button>
+              <button id="tower-save-decision" class="tower-action-btn" type="button" disabled>加入今日决策</button>
+            </div>
+
+            <div class="tower-room-actions stacked">
+              <button id="tower-show-decision" class="tower-action-btn">保存最新决策</button>
+              <button id="tower-return-factory" class="tower-action-btn primary">返回外部工厂</button>
+            </div>
+          </div>
+        </aside>
+
+        <section id="tower-chat-dock" class="tower-chat-dock collapsed" aria-label="高管问答">
+          <button id="tower-chat-dock-toggle" class="tower-chat-dock-toggle" type="button" aria-expanded="false" aria-controls="tower-chat-dock-body">
+            <span>EXECUTIVE CHAT</span>
+            <strong id="tower-chat-mode">问当前高管</strong>
+            <em>点击弹起 / 向下收起</em>
+          </button>
+          <div id="tower-chat-dock-body" class="tower-chat-dock-body">
+            <div id="tower-chat-log" class="tower-chat-log" aria-live="polite"></div>
+            <div class="tower-chat-compose">
+              <div class="tower-chat-identity" aria-label="对话身份选择">
+                <div class="tower-chat-identity-head">
+                  <span>CHAT IDENTITY</span>
+                  <strong>身份选择</strong>
+                </div>
+                <div class="tower-agent-switcher" aria-label="选择本次对话高管身份">
+                  <button class="tower-agent-tab active" data-executive-agent="ceo" type="button">CEO</button>
+                  <button class="tower-agent-tab" data-executive-agent="cio" type="button">CIO</button>
+                  <button class="tower-agent-tab" data-executive-agent="coo" type="button">COO</button>
+                  <button class="tower-agent-tab" data-executive-agent="cto" type="button">CTO</button>
+                  <button class="tower-agent-tab" data-executive-agent="cfo" type="button">CFO</button>
+                </div>
+              </div>
+              <form id="tower-chat-form" class="tower-chat-form">
+                <label for="tower-chat-input">向当前 AI 高管输入问题、意图或经营指令</label>
+                <textarea id="tower-chat-input" rows="3" maxlength="260" placeholder="例如：这个 demo 下一步应该如何商业化？"></textarea>
+                <div class="tower-prompt-row" aria-label="快速问题">
+                  <button class="tower-prompt-chip" type="button" data-tower-prompt="这个 demo 下一步应该如何商业化？">商业化路径</button>
+                  <button class="tower-prompt-chip" type="button" data-tower-prompt="请评估下一步产品功能优先级，并给出今天最该做的一件事。">功能优先级</button>
+                  <button class="tower-prompt-chip" type="button" data-tower-prompt="当前最大的交付风险是什么？应该如何降低风险？">风险判断</button>
+                  <button class="tower-prompt-chip" type="button" data-tower-prompt="请把这个想法转成一个可以进入工厂流水线的生产任务。">转生产任务</button>
+                  <button class="tower-prompt-chip" type="button" data-tower-prompt="基于这次讨论，设计一个 60 分钟临时协作舱：需要谁参与、产出什么、如何验收、如何回流到工厂？">临时协作舱</button>
+                </div>
+                <div class="tower-chat-actions">
+                  <button id="tower-ask-agent-submit" class="tower-action-btn primary" type="submit" data-chat-mode="single" data-tower-busy-button>问当前高管</button>
+                  <button id="tower-open-board-room" class="tower-action-btn" type="button">召集会议舱</button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </section>
+
+        <section id="tower-board-room" class="tower-board-room hidden" role="dialog" aria-label="AI 高管会议舱" aria-hidden="true">
+          <header class="tower-board-head">
+            <div>
+              <span>AI BOARDROOM</span>
+              <strong>AI 高管会议舱</strong>
+            </div>
+            <button id="tower-board-close" class="tower-icon-btn" type="button" aria-label="关闭会议舱">收起</button>
+          </header>
+          <form id="tower-board-form" class="tower-board-form">
+            <label for="tower-board-agenda">会议议题</label>
+            <textarea id="tower-board-agenda" rows="3" maxlength="320" placeholder="例如：这个 demo 下一步如何商业化，并回流成一条可执行工厂任务？"></textarea>
+            <div class="tower-board-seats" aria-label="参会高管席位">
+              <span style="--agent-color:#8fff6a">CEO</span>
+              <span style="--agent-color:#4cc9ff">CIO</span>
+              <span style="--agent-color:#35f0a1">COO</span>
+              <span style="--agent-color:#a78bfa">CTO</span>
+              <span style="--agent-color:#ffa940">CFO</span>
+            </div>
+            <button id="tower-board-start" class="tower-action-btn primary" type="submit" data-tower-busy-button>启动高管会议</button>
+          </form>
+          <div class="tower-board-status" aria-live="polite">
+            <span id="tower-board-status-title">等待会议议题</span>
+            <strong id="tower-board-status-detail">会议舱会集中生成五高管会诊、CEO 总结，并把结论交给右侧任务回流。</strong>
+          </div>
+          <div id="tower-board-flow" class="tower-board-flow" aria-live="polite"></div>
+          <div class="tower-board-actions">
+            <button id="tower-board-create-task" class="tower-action-btn" type="button" disabled>生成工厂任务</button>
+            <button id="tower-board-save-decision" class="tower-action-btn" type="button" disabled>加入今日决策</button>
+          </div>
+        </section>
+      </main>
+    </div>
+  </section>
+
+  <!-- Tooltip -->
+  <div id="tooltip" class="hidden"></div>
+
+  <script type="module" src="main.js"></script>
+</body>
+</html>
